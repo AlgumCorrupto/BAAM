@@ -7,11 +7,12 @@ using System.Text.Json.Serialization;
 namespace BAAM {
     static class thaclass {
         static void Main() {
+            var accenter = new CariocaAccent();
             string args;
             Console.WriteLine("Argumento: ");
             args = Console.ReadLine();
 
-            string accented = AccentEngine.Take(args);
+            string accented = accenter.Take(args);
             
             Console.WriteLine(accented);
 
@@ -19,13 +20,16 @@ namespace BAAM {
         }
     }
 
-    static class AccentEngine {
-        public static string Take(string message) {
+   
+
+    abstract class AccentEngine {
+        virtual protected string path {get; set;}
+        public string Take(string message) { 
             //freakin modify the word
             string[] tokens = message.Split(' ');
             Regex regex = new Regex("\\W+\\Z");
             List<string> moddedTokens = new List<string>();
-            Root accent = jsonIO.readFile("../../../carioca.json");
+            Root accent = jsonIO.readFile(this.path);
             foreach(var token in tokens) {
                 string modifiedToken = "";              //token modificado
                 string originalWord = "";               //palavra original
@@ -82,7 +86,7 @@ namespace BAAM {
                 if(alphanumeric.IsMatch(modded)) {
                     modded = modded + " " + Pick(accent.ending);
                 } else {
-                    modded = modded + ", " + Pick(accent.ending);
+                    modded = modded + ", " + Pick(accent.ending);               
                 }
             }
             //fckin parse the message for tha goofy accent
@@ -93,36 +97,15 @@ namespace BAAM {
             return modded;
         } 
 
-        static string Pick(List<string> tokens) {
+        string Pick(List<string> tokens) {
             var random = new Random();
             int index = random.Next(tokens.Count);
 
             return tokens[index];
         }
-        static string Parse(string message) {
-            //cranking xenophobia to 101% YEEEEAHHHH
-            var s = new Regex(@"([aeiouAEIOU])s($|[bcdfghjklmnpqrtvxzBCDEFGHJKLMNPQRTVXZ\s\W])");
-            var S = new Regex(@"([aeiouAEIOU])S($|[bcdfghjklmnpqrtvzxBCDEFGHJKLMNPQRTVXZ\s\W])");
-            List<string>moddedToken = new List<string>();
-            string[] tokens = message.Split(' ');
-            foreach(string token in tokens) {
-                if(S.IsMatch(token)) {
-                    moddedToken.Add(S.Replace(token, "$1X$2"));
-                    continue;
-                }
-                if(s.IsMatch(token)) {
-                    moddedToken.Add(s.Replace(token, "$1x$2"));
-                    continue;
-                }
-                moddedToken.Add(token);
-            }
-            
-            string modded = string.Join(" ", moddedToken);
+        abstract protected string Parse(string message);
 
-            return modded;    
-        }
-
-        static string ReplaceWord(string word, string original, string mod) { 
+        string ReplaceWord(string word, string original, string mod) { 
             string[] token = word.Split(' ');
             string[] modifiedTokens = token;
             List<string> toReplace = new List<string>();
@@ -149,7 +132,7 @@ namespace BAAM {
             return message;
         }
 
-        static string ReplacePhrase(string phrase, string original, string mod) {
+        string ReplacePhrase(string phrase, string original, string mod) {
             //find de index of the start of the phrase
             //find the length of the phrase
             int index;
@@ -179,6 +162,32 @@ namespace BAAM {
 
         }
     }
+
+ sealed class CariocaAccent : AccentEngine {
+    override protected string path {get;set;} = "../../../carioca.json";
+    override protected string Parse(string message) {
+        //cranking xenophobia to 101% YEEEEAHHHH
+        var s = new Regex(@"([aeiouAEIOU])s($|[bcdfghjklmnpqrtvxzBCDEFGHJKLMNPQRTVXZ\s\W])");
+        var S = new Regex(@"([aeiouAEIOU])S($|[bcdfghjklmnpqrtvzxBCDEFGHJKLMNPQRTVXZ\s\W])");
+        List<string>moddedToken = new List<string>();
+        string[] tokens = message.Split(' ');
+        foreach(string token in tokens) {
+            if(S.IsMatch(token)) {
+                moddedToken.Add(S.Replace(token, "$1X$2"));
+                continue;
+            }
+            if(s.IsMatch(token)) {
+                moddedToken.Add(s.Replace(token, "$1x$2"));
+                continue;
+            }
+            moddedToken.Add(token);
+        }
+        
+        string modded = string.Join(" ", moddedToken);
+        return modded;    
+    }
+
+ } 
 
     public class Phrase
     {
