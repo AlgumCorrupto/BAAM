@@ -67,6 +67,8 @@
         },
         {
             "og": [
+                "oq aconteceu",
+                "oque aconteceu",
                 "o que aconteceu"
             ],
             "mod": [
@@ -75,9 +77,9 @@
         }
     ],
     "ending": [
-        "tá ligado"
+        "tá ligado?"
     ],
     "begin": [
-        "Mermão"
+        "Mermão,"
     ]
 }
